@@ -189,6 +189,11 @@ def _create_observable_goal_envs(all_envs: EnvDict) -> EnvDict:
             env._freeze_rand_vec = False
             env._set_task_called = True
             env.render_mode = render_mode
+            # [11/18/2024] Temporary fix for the camera name and max path length because
+            # we are building only one environment from ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE 
+            # (see https://github.com/Farama-Foundation/Metaworld/tree/master?tab=readme-ov-file#accessing-single-goal-environments)
+            env.camera_name = "corner"
+            env.max_path_length = 200
             env.reset()
             env._freeze_rand_vec = True
             if seed is not None:
