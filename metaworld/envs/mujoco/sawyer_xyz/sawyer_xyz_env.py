@@ -205,6 +205,10 @@ class SawyerXYZEnv(SawyerMocapBase, EzPickle):
 
         self._partially_observable: bool = True
 
+        # A flag to indicate whether the environment should use sparse rewards
+        #   The sparse reward will be based on the "success" key in the info dict
+        self.use_sparse_reward: bool = False
+
         super().__init__(
             self.model_name,
             frame_skip=frame_skip,
@@ -611,6 +615,13 @@ class SawyerXYZEnv(SawyerMocapBase, EzPickle):
         truncate = False
         if self.curr_path_length == self.max_path_length:
             truncate = True
+
+        # Replace the dense reward with sparse reward (based on "success" key in info dict)
+        if self.use_sparse_reward:
+            reward = float(info["success"])
+        
+        info["r"] = f"{reward:.3f}"
+
         return (
             np.array(self._last_stable_obs, dtype=np.float64),
             reward,
