@@ -139,7 +139,10 @@ def _create_hidden_goal_envs(all_envs: EnvDict) -> EnvDict:
     for env_name, env_cls in all_envs.items():
         d = {}
 
-        def initialize(env, seed=None):
+        def initialize(env, seed=None, render_mode=None, 
+                        camera_name="corner", 
+                        episode_length=200, 
+                        use_sparse_reward=False):
             if seed is not None:
                 st0 = np.random.get_state()
                 np.random.seed(seed)
@@ -147,6 +150,13 @@ def _create_hidden_goal_envs(all_envs: EnvDict) -> EnvDict:
             env._partially_observable = True
             env._freeze_rand_vec = False
             env._set_task_called = True
+            env.use_sparse_reward = use_sparse_reward
+            env.render_mode = render_mode
+            # [11/18/2024] Temporary fix for the camera name and max path length because
+            # we are building only one environment from ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE 
+            # (see https://github.com/Farama-Foundation/Metaworld/tree/master?tab=readme-ov-file#accessing-single-goal-environments)
+            env.camera_name = camera_name
+            env.max_path_length = episode_length
             env.reset()
             env._freeze_rand_vec = True
             if seed is not None:
