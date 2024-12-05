@@ -20,7 +20,6 @@ from metaworld.types import XYZ, EnvironmentStateDict, ObservationDict, Task
 
 RenderMode: TypeAlias = "Literal['human', 'rgb_array', 'depth_array']"
 
-
 class SawyerMocapBase(mjenv_gym):
     """Provides some commonly-shared functions for Sawyer Mujoco envs that use mocap for XYZ control."""
 
@@ -47,6 +46,7 @@ class SawyerMocapBase(mjenv_gym):
         camera_name: str | None = None,
         camera_id: int | None = None,
     ) -> None:
+        
         mjenv_gym.__init__(
             self,
             model_name,
@@ -179,6 +179,7 @@ class SawyerXYZEnv(SawyerMocapBase, EzPickle):
         render_mode: RenderMode | None = None,
         camera_id: int | None = None,
         camera_name: str | None = None,
+        temporal_encoding: bool = False
     ) -> None:
         self.action_scale = action_scale
         self.action_rot_scale = action_rot_scale
@@ -208,6 +209,8 @@ class SawyerXYZEnv(SawyerMocapBase, EzPickle):
         # A flag to indicate whether the environment should use dense/sparse/no rewards
         #   The sparse reward will be based on the "success" key in the info dict
         self.env_reward_type: str = "dense"
+        self.timestep = 0 # Keep track of the current env step
+        self.temporal_encoding = temporal_encoding # True to append a temporal encoding to obs
 
         super().__init__(
             self.model_name,
@@ -505,6 +508,12 @@ class SawyerXYZEnv(SawyerMocapBase, EzPickle):
         curr_obs = self._get_curr_obs_combined_no_goal()
         # do frame stacking
         obs = np.hstack((curr_obs, self._prev_obs, pos_goal))
+        
+        if self.temporal_encoding:
+            # Append a temporal encoding to the state (shape (40,))
+            temporal_encoding = self.get_temporal_encoding(self.timestep)
+            obs = np.concatenate((obs, [temporal_encoding]))
+            
         self._prev_obs = curr_obs
         return obs
 
@@ -532,8 +541,7 @@ class SawyerXYZEnv(SawyerMocapBase, EzPickle):
             goal_high = self.goal_space.high
         gripper_low = -1.0
         gripper_high = +1.0
-        return Box(
-            np.hstack(
+        low=np.hstack(
                 (
                     self._HAND_SPACE.low,
                     gripper_low,
@@ -542,9 +550,9 @@ class SawyerXYZEnv(SawyerMocapBase, EzPickle):
                     gripper_low,
                     obj_low,
                     goal_low,
-                )
-            ),
-            np.hstack(
+                ))
+        
+        high = np.hstack(
                 (
                     self._HAND_SPACE.high,
                     gripper_high,
@@ -554,9 +562,13 @@ class SawyerXYZEnv(SawyerMocapBase, EzPickle):
                     obj_high,
                     goal_high,
                 )
-            ),
-            dtype=np.float64,
-        )
+            )
+
+        if self.temporal_encoding:
+            low = np.concatenate((low, [0]))
+            high = np.concatenate((high, [1]))
+
+        return Box(low, high, dtype=np.float64)
 
     @_Decorators.assert_task_is_set
     def step(
@@ -584,12 +596,8 @@ class SawyerXYZEnv(SawyerMocapBase, EzPickle):
 
         if self._did_see_sim_exception:
             assert self._last_stable_obs is not None
-            return (
-                self._last_stable_obs,  # observation just before going unstable
-                0.0,  # reward (penalize for causing instability)
-                False,
-                False,  # termination flag always False
-                {  # info
+
+            info =  {  # info
                     "success": False,
                     "near_object": 0.0,
                     "grasp_success": False,
@@ -597,7 +605,21 @@ class SawyerXYZEnv(SawyerMocapBase, EzPickle):
                     "in_place_reward": 0.0,
                     "obj_to_target": 0.0,
                     "unscaled_reward": 0.0,
-                },
+                }
+
+            obs = np.array(self._last_stable_obs, dtype=np.float64)
+            
+            # if self.temporal_encoding:
+            #     # Append a temporal encoding to the state
+            #     temporal_encoding = self.get_temporal_encoding(self.timestep)
+            #     obs = np.concatenate((obs, temporal_encoding))
+            
+            return (
+                obs,  # observation just before going unstable
+                0.0,  # reward (penalize for causing instability)
+                False,
+                False,  # termination flag always False
+                info,
             )
         mujoco.mj_forward(self.model, self.data)
         self._last_stable_obs = self._get_obs()
@@ -623,14 +645,27 @@ class SawyerXYZEnv(SawyerMocapBase, EzPickle):
             reward = float(info["success"])
         elif self.env_reward_type == "none":
             reward = 0.0
+        
+        obs = np.array(self._last_stable_obs, dtype=np.float64)
+        # if self.temporal_encoding:
+        #     # Append a temporal encoding to the state
+        #     temporal_encoding = self.get_temporal_encoding(self.timestep)
+        #     obs = np.concatenate((obs, temporal_encoding))
+        self.timestep += 1
 
         return (
-            np.array(self._last_stable_obs, dtype=np.float64),
+            obs,
             reward,
             False,
             truncate,
             info,
         )
+
+    def get_temporal_encoding(self, timestep):
+        """
+        Returns a temporal encoding of a timestep to append to the state
+        """
+        return timestep / self.max_path_length
 
     def evaluate_state(
         self, obs: npt.NDArray[np.float64], action: npt.NDArray[np.float32]
@@ -667,6 +702,8 @@ class SawyerXYZEnv(SawyerMocapBase, EzPickle):
         self.curr_path_length = 0
         self.reset_model()
         obs, info = super().reset()
+
+        self.timestep = 0
         self._prev_obs = obs[:18].copy()
         obs[18:36] = self._prev_obs
         obs = obs.astype(np.float64)

@@ -142,16 +142,18 @@ def _create_hidden_goal_envs(all_envs: EnvDict) -> EnvDict:
         def initialize(env, seed=None, render_mode=None, 
                         camera_name="corner", 
                         episode_length=200, 
-                        env_reward_type="dense"):
+                        env_reward_type="dense", 
+                        temporal_encoding=False):
             if seed is not None:
                 st0 = np.random.get_state()
                 np.random.seed(seed)
-            super(type(env), env).__init__()
+            super(type(env), env).__init__(temporal_encoding=temporal_encoding)
             env._partially_observable = True
             env._freeze_rand_vec = False
             env._set_task_called = True
             env.env_reward_type = env_reward_type
             env.render_mode = render_mode
+
             # [11/18/2024] Temporary fix for the camera name and max path length because
             # we are building only one environment from ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE 
             # (see https://github.com/Farama-Foundation/Metaworld/tree/master?tab=readme-ov-file#accessing-single-goal-environments)
@@ -192,17 +194,20 @@ def _create_observable_goal_envs(all_envs: EnvDict) -> EnvDict:
         def initialize(env, seed=None, render_mode=None, 
                         camera_name="corner", 
                         episode_length=200, 
-                        env_reward_type="none"):
+                        env_reward_type="none",
+                        temporal_encoding=False):
             if seed is not None:
                 st0 = np.random.get_state()
                 np.random.seed(seed)
-            super(type(env), env).__init__()
+
+            super(type(env), env).__init__(temporal_encoding=temporal_encoding)
 
             env._partially_observable = False
             env._freeze_rand_vec = False
             env._set_task_called = True
             env.env_reward_type = env_reward_type
             env.render_mode = render_mode
+            #env.temporal_encoding = temporal_encoding
             # [11/18/2024] Temporary fix for the camera name and max path length because
             # we are building only one environment from ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE 
             # (see https://github.com/Farama-Foundation/Metaworld/tree/master?tab=readme-ov-file#accessing-single-goal-environments)

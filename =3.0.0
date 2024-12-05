@@ -1,0 +1,5 @@
+Requirement already satisfied: mujoco in /home/wph52/.conda/envs/crossq/lib/python3.11/site-packages (2.3.7)
+Requirement already satisfied: absl-py in /home/wph52/.conda/envs/crossq/lib/python3.11/site-packages (from mujoco) (2.1.0)
+Requirement already satisfied: glfw in /home/wph52/.conda/envs/crossq/lib/python3.11/site-packages (from mujoco) (2.7.0)
+Requirement already satisfied: numpy in /home/wph52/.conda/envs/crossq/lib/python3.11/site-packages (from mujoco) (1.26.4)
+Requirement already satisfied: pyopengl in /home/wph52/.conda/envs/crossq/lib/python3.11/site-packages (from mujoco) (3.1.7)
