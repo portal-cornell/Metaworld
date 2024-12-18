@@ -18,6 +18,7 @@ class SawyerDrawerOpenEnvV2(SawyerXYZEnv):
         render_mode: RenderMode | None = None,
         camera_name: str | None = None,
         camera_id: int | None = None,
+        **kwargs,
     ) -> None:
         hand_low = (-0.5, 0.40, 0.05)
         hand_high = (0.5, 1, 0.5)
@@ -30,6 +31,7 @@ class SawyerDrawerOpenEnvV2(SawyerXYZEnv):
             render_mode=render_mode,
             camera_name=camera_name,
             camera_id=camera_id,
+            **kwargs,
         )
 
         self.init_config: InitConfigDict = {

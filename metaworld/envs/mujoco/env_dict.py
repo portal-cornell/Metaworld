@@ -143,7 +143,8 @@ def _create_hidden_goal_envs(all_envs: EnvDict) -> EnvDict:
                         camera_name="corner", 
                         episode_length=200, 
                         env_reward_type="dense", 
-                        temporal_encoding=False):
+                        temporal_encoding=False,
+                        render_dim=(480, 480)):
             if seed is not None:
                 st0 = np.random.get_state()
                 np.random.seed(seed)
@@ -153,6 +154,7 @@ def _create_hidden_goal_envs(all_envs: EnvDict) -> EnvDict:
             env._set_task_called = True
             env.env_reward_type = env_reward_type
             env.render_mode = render_mode
+            env._render_dim = render_dim
 
             # [11/18/2024] Temporary fix for the camera name and max path length because
             # we are building only one environment from ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE 
@@ -195,7 +197,8 @@ def _create_observable_goal_envs(all_envs: EnvDict) -> EnvDict:
                         camera_name="corner", 
                         episode_length=200, 
                         env_reward_type="none",
-                        temporal_encoding=False):
+                        temporal_encoding=False,
+                        render_dim=(480, 480)):
             if seed is not None:
                 st0 = np.random.get_state()
                 np.random.seed(seed)
@@ -207,6 +210,7 @@ def _create_observable_goal_envs(all_envs: EnvDict) -> EnvDict:
             env._set_task_called = True
             env.env_reward_type = env_reward_type
             env.render_mode = render_mode
+            env._render_dim = render_dim
             #env.temporal_encoding = temporal_encoding
             # [11/18/2024] Temporary fix for the camera name and max path length because
             # we are building only one environment from ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE 

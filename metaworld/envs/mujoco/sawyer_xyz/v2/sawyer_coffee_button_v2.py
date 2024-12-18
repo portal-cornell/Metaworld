@@ -18,6 +18,7 @@ class SawyerCoffeeButtonEnvV2(SawyerXYZEnv):
         render_mode: RenderMode | None = None,
         camera_name: str | None = None,
         camera_id: int | None = None,
+        **kwargs,
     ) -> None:
         self.max_dist = 0.03
 
@@ -36,6 +37,7 @@ class SawyerCoffeeButtonEnvV2(SawyerXYZEnv):
             render_mode=render_mode,
             camera_name=camera_name,
             camera_id=camera_id,
+            **kwargs,
         )
 
         self.init_config: InitConfigDict = {

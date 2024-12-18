@@ -22,6 +22,7 @@ class SawyerPushBackEnvV2(SawyerXYZEnv):
         render_mode: RenderMode | None = None,
         camera_name: str | None = None,
         camera_id: int | None = None,
+        **kwargs,
     ) -> None:
         goal_low = (-0.1, 0.6, 0.0199)
         goal_high = (0.1, 0.7, 0.0201)
@@ -36,6 +37,7 @@ class SawyerPushBackEnvV2(SawyerXYZEnv):
             render_mode=render_mode,
             camera_name=camera_name,
             camera_id=camera_id,
+            **kwargs,
         )
 
         self.init_config: InitConfigDict = {

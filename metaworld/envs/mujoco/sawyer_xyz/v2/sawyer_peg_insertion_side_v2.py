@@ -37,6 +37,7 @@ class SawyerPegInsertionSideEnvV2(SawyerXYZEnv):
         render_mode: RenderMode | None = None,
         camera_name: str | None = None,
         camera_id: int | None = None,
+        **kwargs,
     ) -> None:
         hand_init_pos = (0, 0.6, 0.2)
 
@@ -53,6 +54,7 @@ class SawyerPegInsertionSideEnvV2(SawyerXYZEnv):
             render_mode=render_mode,
             camera_name=camera_name,
             camera_id=camera_id,
+            **kwargs,
         )
 
         self.init_config: InitConfigDict = {
