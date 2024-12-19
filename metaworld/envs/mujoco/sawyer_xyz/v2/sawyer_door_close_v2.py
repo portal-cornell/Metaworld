@@ -21,6 +21,7 @@ class SawyerDoorCloseEnvV2(SawyerXYZEnv):
         camera_id: int | None = None,
         **kwargs
     ) -> None:
+
         goal_low = (0.2, 0.65, 0.1499)
         goal_high = (0.3, 0.75, 0.1501)
         hand_low = (-0.5, 0.40, 0.05)

@@ -203,7 +203,7 @@ def _create_observable_goal_envs(all_envs: EnvDict) -> EnvDict:
                 st0 = np.random.get_state()
                 np.random.seed(seed)
 
-            super(type(env), env).__init__(temporal_encoding=temporal_encoding)
+            super(type(env), env).__init__(camera_name=camera_name, temporal_encoding=temporal_encoding)
 
             env._partially_observable = False
             env._freeze_rand_vec = False
@@ -233,7 +233,6 @@ def _create_observable_goal_envs(all_envs: EnvDict) -> EnvDict:
         og_env_name = f"{og_env_name}GoalObservable"
         ObservableGoalEnvCls = type(og_env_name, (env_cls,), d)
         observable_goal_envs[og_env_key] = ObservableGoalEnvCls
-
     return OrderedDict(observable_goal_envs)
 
 
